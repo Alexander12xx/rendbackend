@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Repair Shop</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body class="bg-gray-100">
+
+<header class="bg-gray-800 text-white p-4 text-center">
+    <h1 class="text-2xl">Phone Repair Shop</h1>
+</header>
+
+<main class="p-4">
+    <section id="uploadSection" class="mb-4">
+        <h2 class="text-xl mb-2">Upload Work Images</h2>
+        <form id="uploadWorkForm" enctype="multipart/form-data">
+            <input type="file" name="image" accept="image/*" required class="mb-2">
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2">Upload Work Image</button>
+        </form>
+    </section>
+
+    <section id="displayWorkSection">
+        <h2 class="text-xl mb-2">Uploaded Work Images</h2>
+        <div id="workImagesContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+    </section>
+
+    <section id="addProductSection" class="mb-4">
+        <h2 class="text-xl mb-2">Add Featured Product</h2>
+        <form id="addProductForm" enctype="multipart/form-data">
+            <input type="text" name="title" placeholder="Product Title" required class="mb-2 w-full p-2 border border-gray-300 rounded">
+            <input type="text" name="description" placeholder="Product Description" required class="mb-2 w-full p-2 border border-gray-300 rounded">
+            <input type="file" name="image" accept="image/*" required class="mb-2">
+            <button type="submit" class="bg-green-500 text-white px-4 py-2">Add Product</button>
+        </form>
+    </section>
+
+    <section id="displayProductsSection">
+        <h2 class="text-xl mb-2">Featured Products</h2>
+        <div id="productsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+    </section>
+</main>
+
+<script>
+    // Handle image uploads for work images
+    document.getElementById('uploadWorkForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+
+        fetch('/upload-work', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('workImagesContainer');
+            const imgElement = document.createElement('img');
+            imgElement.src = data.filePath;
+            imgElement.alt = 'Uploaded Work Image';
+            imgElement.className = 'w-full h-auto rounded shadow';
+            container.appendChild(imgElement);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+
+    // Handle product uploads
+    document.getElementById('addProductForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+
+        fetch('/add-product', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('productsContainer');
+            const productDiv = document.createElement('div');
+            productDiv.className = 'border rounded p-4 shadow';
+            productDiv.innerHTML = `
+                <h3 class="font-bold">${data.product.title}</h3>
+                <p>${data.product.description}</p>
+                <img src="${data.product.imagePath}" alt="${data.product.title}" class="w-full h-auto rounded">
+            `;
+            container.appendChild(productDiv);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+</script>
+
+</body>
+</html>
